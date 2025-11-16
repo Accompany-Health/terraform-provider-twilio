@@ -1,3 +1,13 @@
+# v0.27.1 (2025-11-15)
+
+FIXES
+
+- Update`twilio_messaging_service` default validity period from 14400 to 36000. Thanks to @DerekQuoc for the fix
+
+NOTES
+
+- Bump terraform SDK dependency version
+
 # v0.27.0 (2025-05-24)
 
 FEATURES
