@@ -365,9 +365,9 @@ func TestAccTwilioMessagingService_invalidValidityPeriodOf0(t *testing.T) {
 	})
 }
 
-func TestAccTwilioMessagingService_invalidValidityPeriodOf14401(t *testing.T) {
+func TestAccTwilioMessagingService_invalidValidityPeriodOf36001(t *testing.T) {
 	friendlyName := acctest.RandString(10)
-	validityPeriod := 14401
+	validityPeriod := 36001
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acceptance.PreCheck(t) },
@@ -375,7 +375,7 @@ func TestAccTwilioMessagingService_invalidValidityPeriodOf14401(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccTwilioMessagingService_validityPeriod(friendlyName, validityPeriod),
-				ExpectError: regexp.MustCompile(`(?s)expected validity_period to be in the range \(1 - 36000\), got 14401`),
+				ExpectError: regexp.MustCompile(`(?s)expected validity_period to be in the range \(1 - 36000\), got 36001`),
 			},
 		},
 	})
