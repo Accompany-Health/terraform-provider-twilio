@@ -4,6 +4,8 @@ TEST_COUNT?=1
 ACCTEST_TIMEOUT?=60m
 ACCTEST_PARALLELISM?=1
 EXAMPLES?=$$(find . -type f -name "main.tf" -prune -exec dirname {} \;)
+GOPATH:=$(shell go env GOPATH)
+MAKECTRL:=.make
 
 default: build
 
@@ -14,6 +16,7 @@ download:
 build: fmt generate
 	go install
 
+
 test: fmt generate
 	go test $(TESTARGS) -timeout=30s -parallel=4 $(TEST)
 
@@ -22,7 +25,10 @@ testacc: fmt
 	mkdir -p temp
 	TF_ACC_TEMP_DIR="$(CURDIR)/temp" TF_ACC=1 go test $(TEST) -v -count $(TEST_COUNT) -parallel $(ACCTEST_PARALLELISM) $(TESTARGS) -timeout $(ACCTEST_TIMEOUT)
 
-fmt:
+$(GOPATH)/bin/goimports: $(GOPATH) $(MAKECTRL) $(MAKECTRL)/called.goimports
+	go install golang.org/x/tools/cmd/goimports 
+
+fmt: $(GOPATH)/bin/goimports
 	@echo "==> Fixing source code with goimports (uses gofmt under the hood)..."
 	goimports -w ./$(PKG_NAME) 
 	gofmt -s -w ./$(PKG_NAME)
@@ -39,13 +45,17 @@ terrafmt-docs:
 	@echo "==> Format docs"
 	@find docs | egrep ".md" | sort | while read f; do terrafmt fmt -f $$f; done
 
-tools:
+
+$(MAKECTRL)/tools: $(MAKECTRL)/called.tools
 	@echo "==> installing required tooling..."
 	go get -u github.com/client9/misspell/cmd/misspell
 	go get -u github.com/bflad/tfproviderlint/cmd/tfproviderlint
 	go get -u github.com/katbyte/terrafmt
 	go get -u github.com/boyter/scc
 	go get -u golang.org/x/tools/cmd/goimports
+	@touch $@
+
+tools: $(MAKECTRL)/tools
 
 reportcard:
 	@echo "==> running go report card"
@@ -76,5 +86,11 @@ validate-all-examples:
 	for example in $(EXAMPLES); do \
 		make validate-example EXAMPLE=$$example; \
 	done
+
+$(MAKECTRL): 
+	@[ -d $@ ] || mkdir $@
+
+$(MAKECTRL)/called.%: $(MAKECTRL)
+	@[ -f $@ ] || touch $@
 
 .PHONY: download build test testacc fmt terraform-fmt terrafmt terrafmt-docs tools generate reportcard goreportcard-refresh validate-example validate-all-examples clean-examples
