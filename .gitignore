@@ -36,4 +36,5 @@ vendor/
 # Misc
 .history
 .DS_Store
-temp
+temp.make
+.make
